@@ -1,4 +1,5 @@
 function check_me(input_id){
+    console.log(input_id)
     var checked_input = document.querySelector("input[id=cb_" + input_id + "]");
     var checked_label = document.querySelector("label[name=lb_" + input_id + "]");
 
@@ -33,4 +34,8 @@ function change_me(input_id, name){
     contentType: "application/json",
     dataType: 'json'
     });
+}
+
+function remove_me(input_string){
+    console.log(input_string)
 }

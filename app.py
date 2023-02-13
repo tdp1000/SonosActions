@@ -1,4 +1,5 @@
 import sqlite3
+import requests
 from flask import Flask, session, render_template, request, g, jsonify
 
 app = Flask(__name__)
@@ -21,8 +22,8 @@ def add_items():
 @app.route("/card_actions", methods=["POST", "GET"])
 def card_actions():
     checked_boxes = request.form.getlist("check")
-    listitem = [item for item in session["all_items"] if item[0] in checked_boxes]
-    for item in listitem:
+    list_item = [item for item in session["all_items"] if item[0] in checked_boxes]
+    for item in list_item:
         if item in session["all_items"]:
             idx = session["all_items"].index(item)
             session["all_items"].pop(idx)
@@ -42,6 +43,8 @@ def process_url():
 def scan_nfc():
     results = None
     card = request.args.get('card')
+    room = request.args.get('room')
+    # print(room)
     session["all_items"] = get_db()
     cards = session["all_items"]
     cards = [(x[0], (x[1], x[3], x[2], x[4])) for x in cards]
@@ -54,7 +57,7 @@ def scan_nfc():
         else:
             # print(card + str(cards[card]))
             results = dict(processed='true', data='action', action=str(cards[card]))
-            action_card(cards[card])
+            action_card(cards[card], room)
     else:
         add_card(card)
     if results is None:
@@ -87,9 +90,9 @@ def update_db(data):
         field = "service"
     else:
         field = "action"
-        playlist = (value.split('playlist/')[1].split('?')[0])
-        playlist = "http://192.168.68.103:5005/playroom/spotify/now/spotify:user:spotify:playlist:" + playlist
-        print(playlist)
+        # playlist = (value.split('playlist/')[1].split('?')[0])
+        # playlist = "http://192.168.68.103:5005/playroom/spotify/now/spotify:user:spotify:playlist:" + playlist
+        # print(playlist)
     sql = "update cards set " + field + " = '" + value + "' where identity = '" + name + "'"
     print(sql)
     cursor.execute(sql)
@@ -107,20 +110,41 @@ def add_card(card):
     db.close()
 
 
-def action_card(card_action):
-    room = "playroom"
+def action_card(card_action, room):
     service = card_action[1]
+    action_type = card_action[2]
+    action = card_action[3]
+    if service == "spotify":
+        service_action = spotify_action(action_type, action, room)
+    elif service == "tunein":
+        prefix = "/" + room + "/tunein/play/" + action.split('station:')[1]
+        service_action = "http://192.168.68.130:5005" + prefix
+    elif service == "sonos":
+        prefix = "/" + room + "/" + action.split('command:')[1]
+        service_action = "http://192.168.68.130:5005" + prefix
+    else:
+        print("unknown service")
+    get_url = service_action
+    get_response = requests.get(get_url).json()
+    print(get_url)
+    print(get_response['status'])
+    print(type(get_response))
 
-    type = card_action[2]
-    if type == "playlist":
+
+def spotify_action(action_type, action, room):
+    if action_type == "playlist":
         prefix = "/" + room + "/spotify/now/spotify:user:spotify:playlist:"
-    elif type == "track":
+        playlist = (action.split('playlist/')[1].split('?')[0])
+        action = "http://192.168.68.130:5005" + prefix + playlist
+    elif action_type == "album":
+        prefix = "/" + room + "/spotify/now/spotify:album:"
+        album = (action.split('album/')[1].split('?')[0])
+        action = "http://192.168.68.130:5005" + prefix + album
+    elif action_type == "track":
         prefix = "/" + room + "/spotify/now/spotify:user:spotify:playlist:"
     else:
         prefix = "/" + room + "/spotify/now/spotify:user:spotify:playlist:"
-    action = card_action[3]
-    if service == "spotify":
-        print(service + " Sonos http action = " + prefix + action)
+    return action
 
 
 @app.teardown_appcontext

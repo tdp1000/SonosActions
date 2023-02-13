@@ -17,6 +17,8 @@ if 1 == 11:
 
 connection = sqlite3.connect("card_list.db")
 cursor = connection.cursor()
+delete_id = int(24)
+cursor.execute('delete from cards where id = 6')
 
 for row in cursor.execute("SELECT * FROM cards"):
     print(row)

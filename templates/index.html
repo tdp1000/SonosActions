@@ -11,7 +11,6 @@
     <!-- LOGO -->
     <div>
         <img SRC="https://raw.githubusercontent.com/tdp1000/WebNFCSonos/main/MusicLogo1.png" alt="card action app logo">
-        <title>NFC Actions</title>
     </div>
     <div id="card_actions">
         <!--form action ="/card_actions" method="post"-->
@@ -35,7 +34,7 @@
                       <td class="tg-0lax"></td>
                       <td class="tg-0lax"></td>
                       <td class="tg-0lax"></td>
-                      <td class="tg-0lax"></td
+                      <td class="tg-0lax"></td>
                   </tr>
 
 
@@ -54,7 +53,7 @@
                       <td class="tg-0lax">
             <select name="select_action_type" id="{{'sat_'+item[0]}}" onchange="change_me('{{ item[0] }}','sat')">
                 <option value="{{ item[3] }}"selected>{{ item[3] }}</option>>
-                    {% for x in ['spotify','other'] %}
+                    {% for x in ['spotify', 'tunein', 'other', 'sonos'] %}
                         {% if x == item[3] %}
                         {% else %}
                         <option value="{{ x }}">{{ x }}</option>
@@ -66,7 +65,7 @@
                       <td class="tg-0lax">
             <select name="select_service_type" id="{{'serv_'+item[0]}}" onchange="change_me('{{ item[0] }}','serv')">
                 <option selected value="{{ item[2] }}">{{ item[2] }}</option>>
-                    {% for x in ['playlist','album', 'track'] %}
+                    {% for x in ['playlist','album', 'track', 'command'] %}
                         {% if x == item[2] %}
                         {% else %}
                         <option value="{{ x }}">{{ x }}</option>
@@ -82,21 +81,10 @@
             {% endfor %}
                     </tbody>
                 </table>
-            <input type="submit" value="CHECK ITEMS" id="remove_btn">
+            <input type="submit" value="CHECK ITEMS" id="remove_btn" onclick="remove_me('test')">
         </form>
     </div>
-        <div id = "add item">
-            <form action="add_items" method="POST">
-                <select name="select_items">
-                    {% for item in all_items %}
-                    <option value="{{ item }}">{{ item[0] }}</option>
-                    {% endfor %}
 
-                </select>
-                <input name="card_action" type="text" value="Card Action">
-                <input type="submit" value="ADD ITEM" id="add_btn">
-            </form>
-        </div>
 
     </body>
 </html>
